@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using lan2.Data;
 
@@ -11,9 +12,11 @@ using lan2.Data;
 namespace lan2.Migrations
 {
     [DbContext(typeof(UserContext))]
-    partial class UserContextModelSnapshot : ModelSnapshot
+    [Migration("20240322035205_updateTypeText-Job-User")]
+    partial class updateTypeTextJobUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -61,9 +64,6 @@ namespace lan2.Migrations
                     b.Property<int>("JobId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SkillId")
-                        .HasColumnType("int");
-
                     b.Property<byte>("YearOfExperience")
                         .HasColumnType("tinyint");
 
@@ -71,31 +71,7 @@ namespace lan2.Migrations
 
                     b.HasIndex("JobId");
 
-                    b.HasIndex("SkillId");
-
                     b.ToTable("JobSkill");
-                });
-
-            modelBuilder.Entity("lan2.Models.Skill", b =>
-                {
-                    b.Property<int>("SkillId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SkillId"));
-
-                    b.Property<string>("SkillDescription")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SkillName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("SkillId");
-
-                    b.ToTable("skills");
                 });
 
             modelBuilder.Entity("lan2.Models.User", b =>
@@ -152,9 +128,6 @@ namespace lan2.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("SkillId")
-                        .HasColumnType("int");
-
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -163,11 +136,9 @@ namespace lan2.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SkillId");
-
                     b.HasIndex("UserId");
 
-                    b.ToTable("UsesrSkill");
+                    b.ToTable("UserSkill");
                 });
 
             modelBuilder.Entity("lan2.Models.JobSkill", b =>
@@ -178,32 +149,16 @@ namespace lan2.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("lan2.Models.Skill", "Skill")
-                        .WithMany()
-                        .HasForeignKey("SkillId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Job");
-
-                    b.Navigation("Skill");
                 });
 
             modelBuilder.Entity("lan2.Models.UserSkill", b =>
                 {
-                    b.HasOne("lan2.Models.Skill", "Skill")
-                        .WithMany()
-                        .HasForeignKey("SkillId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("lan2.Models.User", "User")
                         .WithMany("userSkills")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Skill");
 
                     b.Navigation("User");
                 });

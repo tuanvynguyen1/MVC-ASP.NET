@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using lan2.Data;
 using lan2.Models;
+using lan2.Data.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace lan2.Controllers
 {
-    public class UsersController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UsersController : ControllerBase
     {
         private readonly UserContext _context;
 
@@ -18,143 +22,54 @@ namespace lan2.Controllers
         {
             _context = context;
         }
-
-        // GET: Users
-        public async Task<IActionResult> Index()
+        [Authorize]
+        // GET: api/
+        [Route("me")]
+        [Produces("application/json")]
+        [HttpGet]
+        public async Task<IActionResult> getAuth()
         {
-            return View(await _context.User.ToListAsync());
-        }
-
-        // GET: Users/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
+            var userid = User.Claims.Where(x => x.Type == "UserId").FirstOrDefault()?.Value;
+            if (userid == null || userid == string.Empty)
             {
-                return NotFound();
+                return Unauthorized();
             }
+            int id = int.Parse(userid);
 
-            var user = await _context.User
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return View(user);
+            return Common.CommonResponse.objectResult(200, "", _context.User.Include(x => x.userSkills).FirstOrDefault(x => x.Id == id));
         }
-
-        // GET: Users/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Users/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Route("update")]
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,Email,Password,UserName,PhoneNumber,Avatar")] User user)
+        [Authorize]
+        public async Task<IActionResult> updateInfomation(UpdateRequestViewModel model)
         {
-            user.Password = Common.CommonEncryption.convertToMD5(user.Password);
-            if (ModelState.IsValid)
+            var userid = User.Claims.Where(x => x.Type == "UserId").FirstOrDefault()?.Value;
+            if (userid == null || userid == string.Empty)
             {
-                _context.Add(user);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return Unauthorized();
             }
-            return View(user);
-        }
+            int id = int.Parse(userid);
+            User? user = _context.User.FirstOrDefault(x => x.Id == id);
 
-        // GET: Users/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var user = await _context.User.FindAsync(id);
             if (user == null)
             {
-                return NotFound();
+                return Unauthorized();
             }
-            return View(user);
-        }
 
-        // POST: Users/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.Email = model.Email;
+            user.PhoneNumber = model.Phonenumber;
+            _context.SaveChanges();
+            return Common.CommonResponse.objectResult(200, "Update Successful!");
+
+        }
+        [Route("ChangePassword")]
         [HttpPost]
 
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FirstName,LastName,Email,Password,UserName,PhoneNumber,Avatar")] User user)
+        public async Task<IActionResult> updatePassword()
         {
-            user.Password = Common.CommonEncryption.convertToMD5(user.Password);
-            if (id != user.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UserExists(user.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(user);
-        }
-
-        // GET: Users/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var user = await _context.User
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return View(user);
-        }
-
-        // POST: Users/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var user = await _context.User.FindAsync(id);
-            if (user != null)
-            {
-                _context.User.Remove(user);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool UserExists(int id)
-        {
-            return _context.User.Any(e => e.Id == id);
+            return null;
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.IdentityModel.Tokens.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace lan2.Models
 {
@@ -19,13 +21,16 @@ namespace lan2.Models
         [StringLength(50)]
         public string JobTitle { get; set; }
         [Required]
+        [DataType(DataType.Text)]
+        [Column(TypeName = "text")]
         public string JobDescription { get; set; }
 
         [Required]
         public job_status JobStatus { get; set; }
 
         [Required]
+        [DataType(DataType.DateTime)]
         public DateTime ExpiredDate { get; set; }
-
+        public ICollection<JobSkill> Skill { get; }
     }
 }

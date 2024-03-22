@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using lan2.Data;
 
@@ -11,9 +12,11 @@ using lan2.Data;
 namespace lan2.Migrations
 {
     [DbContext(typeof(UserContext))]
-    partial class UserContextModelSnapshot : ModelSnapshot
+    [Migration("20240322035750_update_relationship_to_skill")]
+    partial class update_relationship_to_skill
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -167,7 +170,7 @@ namespace lan2.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UsesrSkill");
+                    b.ToTable("UserSkill");
                 });
 
             modelBuilder.Entity("lan2.Models.JobSkill", b =>
